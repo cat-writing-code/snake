@@ -46,13 +46,10 @@ public class Game extends JPanel implements ActionListener, KeyListener {
 
         if (gameOver == false) {
             drawFood(g);
-
-            // draw snake
-            g.setColor(snakeHead.getColor());
-            g.fillRect(snakeHead.getX(), snakeHead.getY(), blockSize, blockSize);
-
+            drawSnake(g);
             drawGrid(g);
             displayScore(g);
+            
             gameOver = checkGameOver();
         } else {
             gameOver(g);
@@ -139,6 +136,7 @@ public class Game extends JPanel implements ActionListener, KeyListener {
         if (snakeHead.getX() == food.getX() && snakeHead.getY() == food.getY()) {
             changeFoodLocation();
             score++;
+            growSnake();
             return true;
         }
         return false;
@@ -152,6 +150,8 @@ public class Game extends JPanel implements ActionListener, KeyListener {
 
     // check if snake head collides with self
     public boolean snakeSelfCollision() {
+        for (int i = 1; i < snake.size(); i++) {
+        }
         return false;
     }
 
@@ -162,8 +162,28 @@ public class Game extends JPanel implements ActionListener, KeyListener {
 
     // move snake
     public void move() {
-        for (SnakeBlock s : snake) {
-            s.updateLocation();
+        int[] oldX = new int[snake.size()];
+        int[] oldXVel = new int[snake.size()];
+        int[] oldY = new int[snake.size()];
+        int[] oldYVel = new int[snake.size()];
+
+        // store old positions and velocities
+        for (int i = 0; i < snake.size(); i++) {
+            oldX[i] = snake.get(i).getX();
+            oldXVel[i] = snake.get(i).getXVelocity();
+            oldY[i] = snake.get(i).getY();
+            oldYVel[i] = snake.get(i).getYVelocity();
+        }
+
+        // move head
+        snakeHead.updateLocation();
+
+        // move the other body segments and update its velocity
+        for (int i = 1; i < snake.size(); i++) {
+            snake.get(i).setX(oldX[i-1]);
+            snake.get(i).setXVel(oldXVel[i-1]);
+            snake.get(i).setY(oldY[i-1]);
+            snake.get(i).setYVel(oldYVel[i-1]);
         }
 
         // check if the snake has eaten some food
@@ -171,6 +191,33 @@ public class Game extends JPanel implements ActionListener, KeyListener {
     }
 
     // grow snake
+    public void growSnake() {
+        int posCurrTail = snake.size()-1;
+        SnakeBlock newTail;
+        SnakeBlock currTail = snake.get(posCurrTail);
+        int y = currTail.getY();
+        int x = currTail.getX();
+
+        // based off of current direction of the tail, add new tail
+        if (currTail.getXVelocity() == 0) { // either going up or down
+            if (currTail.getYVelocity() < 0) { // going up
+                y += blockSize;
+            } else { // going down
+                y += -1*blockSize;
+            }
+            newTail = new SnakeBlock(x, y, blockSize);
+            newTail.setYVel(currTail.getYVelocity());
+        } else { // either going left or right
+            if (currTail.getXVelocity() > 0) { // going right
+                x += -1*blockSize;
+            } else { // going left
+                x += blockSize;
+            }
+            newTail = new SnakeBlock(x, y, blockSize);
+            newTail.setYVel(currTail.getXVelocity());
+        }
+        snake.add(newTail);
+    }
 
     // reset game
     public void resetGame() {
@@ -208,16 +255,21 @@ public class Game extends JPanel implements ActionListener, KeyListener {
     @Override
     public void keyPressed(KeyEvent e) {
         if (!gameOver) {
-            if (e.getKeyCode() == KeyEvent.VK_UP) {
+            if (e.getKeyCode() == KeyEvent.VK_UP && 
+                !(snakeHead.getYVelocity() == blockSize && snake.size() > 1)) {
                 snakeHead.setXVel(0);
                 snakeHead.setYVel(-1*blockSize);
-            } else if (e.getKeyCode() == KeyEvent.VK_DOWN) {
+            } else if (e.getKeyCode() == KeyEvent.VK_DOWN && 
+                !(snakeHead.getYVelocity() == -1*blockSize && snake.size() > 1)) { 
+                //(snakeHead.getYVelocity() == -1*blockSize && snake.size() > 1)) {
                 snakeHead.setXVel(0);
                 snakeHead.setYVel(blockSize);
-            } else if (e.getKeyCode() == KeyEvent.VK_LEFT) {
+            } else if (e.getKeyCode() == KeyEvent.VK_LEFT && 
+                !(snakeHead.getXVelocity() == blockSize && snake.size() > 1)) {
                 snakeHead.setXVel(-1*blockSize);
                 snakeHead.setYVel(0);
-            } else if (e.getKeyCode() == KeyEvent.VK_RIGHT) {
+            } else if (e.getKeyCode() == KeyEvent.VK_RIGHT&& 
+                !(snakeHead.getXVelocity() == -1*blockSize && snake.size() > 1)) {
                 snakeHead.setXVel(blockSize);
                 snakeHead.setYVel(0);
             }
