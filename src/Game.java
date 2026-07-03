@@ -11,6 +11,7 @@ public class Game extends JPanel implements ActionListener, KeyListener {
     private FoodBlock food;
     private Random ran;
     private Timer timer;
+    private boolean gameOver;
 
     public Game(int width, int height) {
         this.width = width;
@@ -22,6 +23,7 @@ public class Game extends JPanel implements ActionListener, KeyListener {
         addKeyListener(this);
         setFocusable(true);
         ran = new Random();
+        gameOver = false;
 
         snake = new ArrayList<>();
         snakeHead = new SnakeBlock(6*blockSize, 7*blockSize, blockSize);
@@ -41,24 +43,31 @@ public class Game extends JPanel implements ActionListener, KeyListener {
     }
 
     public void draw(Graphics g) {
-        drawFood(g);
 
-        // draw snake
-        g.setColor(snakeHead.getColor());
-        g.fillRect(snakeHead.getX(), snakeHead.getY(), blockSize, blockSize);
+        if (gameOver == false) {
+            drawFood(g);
 
-        drawGrid(g);
-        displayScore(g);
+            // draw snake
+            g.setColor(snakeHead.getColor());
+            g.fillRect(snakeHead.getX(), snakeHead.getY(), blockSize, blockSize);
+
+            drawGrid(g);
+            displayScore(g);
+            gameOver = checkGameOver();
+        } else {
+            gameOver(g);
+        }
+        
     }
 
     // draw grid
     public void drawGrid(Graphics g) {
         g.setColor(new Color(70,70,70));
-        for (int i = 0; i < width; i += blockSize) {
-            g.drawLine(i, 0, i, height);
+        for (int i = blockSize; i <= width-blockSize; i += blockSize) {
+            g.drawLine(i, blockSize, i, height-blockSize);
         }
-        for (int j = 0; j < height; j += blockSize) {
-            g.drawLine(0, j, width, j);
+        for (int j = blockSize; j <= height-blockSize; j += blockSize) {
+            g.drawLine(blockSize, j, width-blockSize, j);
         }
 
     }
@@ -84,10 +93,28 @@ public class Game extends JPanel implements ActionListener, KeyListener {
         g.drawString("score: " + score, 10, 20);
     }
 
+    // draw game over
+    public void gameOver(Graphics g) {
+        g.setColor(Color.WHITE);
+        g.setFont(new Font("Arial", Font.BOLD, 30));
+        g.drawString("game over!", (width/2)-80, 90);
+
+        g.setFont(new Font("Arial", Font.BOLD, 20));
+        g.drawString("score: " + score, (width/2)-35, 120);
+
+        g.drawString("press space for a new game", (width/2)-130, 320);
+    }
+
     // change food location
     public void changeFoodLocation() {
-        int x = ran.nextInt(width / blockSize) * blockSize;
-        int y = ran.nextInt(height / blockSize) * blockSize;
+        int maxX = width - blockSize;
+        int maxY = height - blockSize;
+        int cols = (maxX - blockSize)/blockSize;
+        int rows = (maxY - blockSize)/blockSize;
+
+        int x = ran.nextInt(cols) * blockSize + blockSize;
+        int y = ran.nextInt(rows) * blockSize + blockSize;
+
         food.setX(x);
         food.setY(y);
 
@@ -119,7 +146,7 @@ public class Game extends JPanel implements ActionListener, KeyListener {
 
     // check if snake head collides with wall
     public boolean snakeWallCollision() {
-        return false;
+        return snakeHead.getX() < blockSize || snakeHead.getX() >= width-blockSize || snakeHead.getY() < blockSize || snakeHead.getY() >= height-blockSize;
     }
 
 
@@ -130,11 +157,7 @@ public class Game extends JPanel implements ActionListener, KeyListener {
 
     // check if game over
     public boolean checkGameOver() {
-        if (snakeSelfCollision() || snakeWallCollision()) {
-            return true;
-        }
-
-        return false;
+        return snakeSelfCollision() || snakeWallCollision();
     }
 
     // move snake
@@ -159,18 +182,24 @@ public class Game extends JPanel implements ActionListener, KeyListener {
     //key movements
     @Override
     public void keyPressed(KeyEvent e) {
-        if (e.getKeyCode() == KeyEvent.VK_UP) {
-            snakeHead.setXVel(0);
-            snakeHead.setYVel(-1*blockSize);
-        } else if (e.getKeyCode() == KeyEvent.VK_DOWN) {
-            snakeHead.setXVel(0);
-            snakeHead.setYVel(blockSize);
-        } else if (e.getKeyCode() == KeyEvent.VK_LEFT) {
-            snakeHead.setXVel(-1*blockSize);
-            snakeHead.setYVel(0);
-        } else if (e.getKeyCode() == KeyEvent.VK_RIGHT) {
-            snakeHead.setXVel(blockSize);
-            snakeHead.setYVel(0);
+        if (!gameOver) {
+            if (e.getKeyCode() == KeyEvent.VK_UP) {
+                snakeHead.setXVel(0);
+                snakeHead.setYVel(-1*blockSize);
+            } else if (e.getKeyCode() == KeyEvent.VK_DOWN) {
+                snakeHead.setXVel(0);
+                snakeHead.setYVel(blockSize);
+            } else if (e.getKeyCode() == KeyEvent.VK_LEFT) {
+                snakeHead.setXVel(-1*blockSize);
+                snakeHead.setYVel(0);
+            } else if (e.getKeyCode() == KeyEvent.VK_RIGHT) {
+                snakeHead.setXVel(blockSize);
+                snakeHead.setYVel(0);
+            }
+        } else {
+            if (e.getKeyCode() == KeyEvent.VK_SPACE) {
+                System.out.println("new game");
+            }
         }
     }
 
