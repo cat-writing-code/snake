@@ -4,13 +4,12 @@ import javax.swing.*;
 import java.util.ArrayList;
 import java.util.Random;
 
-public class Game extends JPanel implements ActionListener {
+public class Game extends JPanel implements ActionListener, KeyListener {
     private int width, height, blockSize, score;
     private SnakeBlock snakeHead;
     private ArrayList<SnakeBlock> snake;
     private FoodBlock food;
     private Random ran;
-    private boolean gameOver;
     private Timer timer;
 
     public Game(int width, int height) {
@@ -20,16 +19,19 @@ public class Game extends JPanel implements ActionListener {
         score = 0;
         setPreferredSize(new Dimension(this.width, this.height));
         setBackground(Color.BLACK);
+        addKeyListener(this);
+        setFocusable(true);
         ran = new Random();
-        gameOver = false;
 
         snake = new ArrayList<>();
         snakeHead = new SnakeBlock(6*blockSize, 7*blockSize, blockSize);
         snake.add(snakeHead);
 
+        food = new FoodBlock(0, 0, blockSize);
         changeFoodLocation();
 
         timer = new Timer(100, this);
+        timer.start();
     }
 
 
@@ -96,8 +98,8 @@ public class Game extends JPanel implements ActionListener {
 
     // check if food is on snake when trying to change food location
     public boolean checkFoodCollision() {
-        for (SnakeBlock block : snake) {
-            if (block.getX() == food.getX() && block.getY() == food.getY()) {
+        for (SnakeBlock s : snake) {
+            if (s.getX() == food.getX() && s.getY() == food.getY()) {
                 return true;
             }
         }
@@ -115,9 +117,66 @@ public class Game extends JPanel implements ActionListener {
         return false;
     }
 
+    // check if snake head collides with wall
+    public boolean snakeWallCollision() {
+        return false;
+    }
+
+
+    // check if snake head collides with self
+    public boolean snakeSelfCollision() {
+        return false;
+    }
+
+    // check if game over
+    public boolean checkGameOver() {
+        if (snakeSelfCollision() || snakeWallCollision()) {
+            return true;
+        }
+
+        return false;
+    }
+
+    // move snake
+    public void move() {
+        for (SnakeBlock s : snake) {
+            s.updateLocation();
+        }
+
+        // check if the snake has eaten some food
+        checkSnakeFoodCollision();
+    }
+
+    // grow snake
 
     @Override
     public void actionPerformed(ActionEvent e) {
+        move();
         repaint();
     }
+
+
+    //key movements
+    @Override
+    public void keyPressed(KeyEvent e) {
+        if (e.getKeyCode() == KeyEvent.VK_UP) {
+            snakeHead.setXVel(0);
+            snakeHead.setYVel(-1*blockSize);
+        } else if (e.getKeyCode() == KeyEvent.VK_DOWN) {
+            snakeHead.setXVel(0);
+            snakeHead.setYVel(blockSize);
+        } else if (e.getKeyCode() == KeyEvent.VK_LEFT) {
+            snakeHead.setXVel(-1*blockSize);
+            snakeHead.setYVel(0);
+        } else if (e.getKeyCode() == KeyEvent.VK_RIGHT) {
+            snakeHead.setXVel(blockSize);
+            snakeHead.setYVel(0);
+        }
+    }
+
+    @Override
+    public void keyTyped(KeyEvent e) {}
+
+    @Override
+    public void keyReleased(KeyEvent e) {}
 }

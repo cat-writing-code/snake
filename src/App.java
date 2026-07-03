@@ -16,5 +16,6 @@ public class App {
         Game game = new Game(boardWidth, boardHeight);
         frame.add(game);
         frame.pack();
+        game.requestFocus();
     }
 }
