@@ -151,6 +151,10 @@ public class Game extends JPanel implements ActionListener, KeyListener {
     // check if snake head collides with self
     public boolean snakeSelfCollision() {
         for (int i = 1; i < snake.size(); i++) {
+            if (snakeHead.getX() == snake.get(i).getX() && 
+                snakeHead.getY() == snake.get(i).getY()) {
+                    return true;
+            }
         }
         return false;
     }
@@ -214,7 +218,7 @@ public class Game extends JPanel implements ActionListener, KeyListener {
                 x += blockSize;
             }
             newTail = new SnakeBlock(x, y, blockSize);
-            newTail.setYVel(currTail.getXVelocity());
+            newTail.setXVel(currTail.getXVelocity());
         }
         snake.add(newTail);
     }
@@ -260,8 +264,7 @@ public class Game extends JPanel implements ActionListener, KeyListener {
                 snakeHead.setXVel(0);
                 snakeHead.setYVel(-1*blockSize);
             } else if (e.getKeyCode() == KeyEvent.VK_DOWN && 
-                !(snakeHead.getYVelocity() == -1*blockSize && snake.size() > 1)) { 
-                //(snakeHead.getYVelocity() == -1*blockSize && snake.size() > 1)) {
+                !(snakeHead.getYVelocity() == -1*blockSize && snake.size() > 1)) {
                 snakeHead.setXVel(0);
                 snakeHead.setYVel(blockSize);
             } else if (e.getKeyCode() == KeyEvent.VK_LEFT && 
