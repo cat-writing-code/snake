@@ -172,6 +172,31 @@ public class Game extends JPanel implements ActionListener, KeyListener {
 
     // grow snake
 
+    // reset game
+    public void resetGame() {
+        if (timer != null && timer.isRunning()) {
+            timer.stop();
+        }
+
+        score = 0;
+        gameOver = false;
+        snake.clear();
+        ran = new Random();
+        gameOver = false;
+
+        snake = new ArrayList<>();
+        snakeHead = new SnakeBlock(6*blockSize, 7*blockSize, blockSize);
+        snake.add(snakeHead);
+
+        food = new FoodBlock(0, 0, blockSize);
+        changeFoodLocation();
+
+        timer = new Timer(100, this);
+        timer.start();
+        repaint();
+
+    }
+
     @Override
     public void actionPerformed(ActionEvent e) {
         move();
@@ -198,7 +223,7 @@ public class Game extends JPanel implements ActionListener, KeyListener {
             }
         } else {
             if (e.getKeyCode() == KeyEvent.VK_SPACE) {
-                System.out.println("new game");
+                resetGame();
             }
         }
     }
