@@ -1,0 +1,6 @@
+/**
+ * Interger
+ */
+public class Interger {
+
+}

@@ -2,7 +2,9 @@ import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Random;
+import java.util.Set;
 
 public class Game extends JPanel implements ActionListener, KeyListener {
     private int width, height, blockSize, score;
@@ -12,6 +14,7 @@ public class Game extends JPanel implements ActionListener, KeyListener {
     private Random ran;
     private Timer timer;
     private boolean gameOver;
+    private Set<Integer> pressedKeys;
 
     public Game(int width, int height) {
         this.width = width;
@@ -24,6 +27,7 @@ public class Game extends JPanel implements ActionListener, KeyListener {
         setFocusable(true);
         ran = new Random();
         gameOver = false;
+        pressedKeys = new HashSet<>();
 
         snake = new ArrayList<>();
         snakeHead = new SnakeBlock(6*blockSize, 7*blockSize, blockSize);
@@ -32,7 +36,7 @@ public class Game extends JPanel implements ActionListener, KeyListener {
         food = new FoodBlock(0, 0, blockSize);
         changeFoodLocation();
 
-        timer = new Timer(100, this);
+        timer = new Timer(150, this);
         timer.start();
     }
 
@@ -59,6 +63,13 @@ public class Game extends JPanel implements ActionListener, KeyListener {
 
     // draw grid
     public void drawGrid(Graphics g) {
+        //draw empty space around board
+        g.setColor(Color.BLACK);
+        g.fillRect(0, 0, blockSize, height);
+        g.fillRect(width-blockSize, 0, blockSize, height);
+        g.fillRect(0, 0, width, blockSize);
+        g.fillRect(0, height-blockSize, width, blockSize);
+
         g.setColor(new Color(70,70,70));
         for (int i = blockSize; i <= width-blockSize; i += blockSize) {
             g.drawLine(i, blockSize, i, height-blockSize);
@@ -234,6 +245,7 @@ public class Game extends JPanel implements ActionListener, KeyListener {
         snake.clear();
         ran = new Random();
         gameOver = false;
+        pressedKeys = new HashSet<>();
 
         snake = new ArrayList<>();
         snakeHead = new SnakeBlock(6*blockSize, 7*blockSize, blockSize);
@@ -242,7 +254,7 @@ public class Game extends JPanel implements ActionListener, KeyListener {
         food = new FoodBlock(0, 0, blockSize);
         changeFoodLocation();
 
-        timer = new Timer(100, this);
+        timer = new Timer(150, this);
         timer.start();
         repaint();
 
@@ -258,6 +270,14 @@ public class Game extends JPanel implements ActionListener, KeyListener {
     //key movements
     @Override
     public void keyPressed(KeyEvent e) {
+        int key = e.getKeyCode();
+        //ignore repeat key
+        if (pressedKeys.contains(key)) {
+            return;
+        }
+
+        pressedKeys.add(key);
+
         if (!gameOver) {
             if (e.getKeyCode() == KeyEvent.VK_UP && 
                 !(snakeHead.getYVelocity() == blockSize && snake.size() > 1)) {
@@ -287,5 +307,8 @@ public class Game extends JPanel implements ActionListener, KeyListener {
     public void keyTyped(KeyEvent e) {}
 
     @Override
-    public void keyReleased(KeyEvent e) {}
+    public void keyReleased(KeyEvent e) {
+        // this is to help when someone is holding down a key
+        pressedKeys.remove(e.getKeyCode());
+    }
 }
